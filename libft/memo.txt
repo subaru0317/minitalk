@@ -1,0 +1,141 @@
+		INCDIR curren directory にあるLibftを使う予定でつけるもの。LibftそのもののMakefileには不要
+		ーI $(INCDIR）が存在することを期待する為エラーが発生するかもしれない
+
+
+		memchr 大小比較でした方が良い
+		const ついてるものには memcpy if (dst == src) return (dst);
+
+		memmove constつけろ　if (dst == src) return (dst);
+		if (dst < src)
+		{
+
+		} else if (dst > src)
+		{
+
+		}
+		としたら if (dst == src) が不要になる。自然な書き方。
+
+		memset *ptr, cで型が混ざっている。
+
+		' ' <= c && c <= ''
+
+		c - ('a' - 'A')
+
+		strrchr
+		・i を最初の方に持ってくる
+		・i == 0 で break;
+		while (1)
+		{
+			if (i == 0)
+				break;
+			--i;
+		}
+
+		strrchr
+		int 32bit 2GB -> コンピュータのメモリの最初から最後までとかの長い文字列の処理が無理（i が overflow）
+		size_t 64bitで安全。
+
+		strdup
+		memmoveではなくmemcpyで良い。絶対かさ
+
+
+		striteri fでもNULL
+		unsigned int 32bit -> size_t 64bit の方が安全
+
+
+		strlcat  の処理を見ておく。
+		i < dstsize && dst[i]の順にすべき　i が達していないのを見てからdstの中身を見るべき 
+		dst_len は iで良い
+
+		strlcpy i + 1 < dstsizeにすべき　overflowの危険がなくなる。　これも順番逆 i + 1 < dstsize && src[i]
+
+		strmapi fでもNULLにすべき
+		unsigned int ではなくsize_t
+		f(i, s[i])と書いても良い
+
+
+		while (i < len && s[i] && s2[i])
+		strncmp i < len reutrn 
+		return 0
+		0を特別扱いするよりも自然と処理される書き方を
+
+		strnstr
+		while (big_index < len && ft_strncmp)
+		if (*little)はいらない *little == NULL なら little_len = 0となり while 
+		strncmp
+		while ２重にする必要なし
+		strncmpでいける
+
+		strtrim
+		search_char strchrと同じ
+		return (ft_strdup(s1));
+
+		i = ft_strlen(s1) - 1;をしないようにすると良い // ?
+		i > 0 && search_char(s1[i--], set)
+		dst[len - 1] = '\0' は substr で対応されるはず
+
+		substr callocにするだけで良い
+		int main()
+		{
+			char *s = ft_substr("a", 0, -1); // overflow // ながさ 2、文字列"a"
+			strlcpy(dst, s + start, len + 1); でoutになっている // len + 1  が 0 になる！
+		}
+
+		s_len = ft_strlen(s);
+
+		三通りの分岐が必要となる。
+		len = s_len >= start ? min(s_len - start, len) : 0;
+		len = min(len, s_len - start);
+
+		gccf でデバッグ
+
+		-fsanitize=address -fsanitize=undefined
+
+		callocエラー処理の順番がおかしい。overflowの処理はmallocの前に行うべき。leak扱いになるはず。
+		overflowしてちょぴっとだけ領域確保することになる。
+		int main()
+		{
+			void	*p = ft_calloc((1u << 63) + 1, 2);
+			printf()
+		}
+		calloc(-1, -1)は1を返す？
+
+		ft_bzero(ptr, size *  number);
+
+		putnbr
+		long long -> unsigned int 
+		if (n_tmp == 0)
+			break;
+
+		itoa
+		longlong -> unsigned int
+		lenを数える関数の所で分けたほうが良い。
+
+		ft_split s == NULLなら NULLを返した方が良い。
+		cnt_substr
+		if (s[i - 1] == c && s[i] != c)
+			cnt++;
+		でできる。
+
+malloc と free は同回数
+		ft_malloc()
+		{
+			return NULL;
+		}
+		#define malloc ft_malloc
+
+		ndptr free free (lstdelone)
+
+		itoa 
+		n_tmp でいけるのでflagは必要なさそう
+		0 の時　len++ で特別扱い不要になる　-> atoiも
+
+
+
+[明日すること]
+		substr, split, strnstr
+		&& の条件の順を確認
+		インクリメントは i++ に統一
+norm
+		tester
+		Peer evaluation のアドバイスの確認

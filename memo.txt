@@ -1,0 +1,33 @@
+signal
+
+int sigemptyset(sigset_t *set);
+	setで与えたsignal集合を空に初期化し、signalが1つも含まれていない状態にする。
+
+int sigaddset(sigset_t *set, int signum);
+	setにsignum-signalを与える。
+
+int sigaction(int signum, const struct sigaction *act, struct sigaction *oldact);
+	特定のsignalを受信した際のprocessの動作を変更するのに使用される。
+
+int	kill(pid_t pid, int sig)
+	任意のprocess-groupもしくはprocessにsignalを送るのに使われる。
+	pid > 0 --- signal sigがpidで指定されたIDをもつprocessに送られる
+	pid = 0 --- 呼び出し元のprocessのprocess-groupに属する
+				全てのprocessに sig で指定したsignalが送られる。
+	
+
+
+
+pid_t getpid(void);
+	呼び出し元のprocessのprocessIDを返す。
+
+int	pause(void);
+	呼び出したprocess(またはスレッド)を、そのprocessを終了させたり、
+	signal捕捉関数が起動されるようなsignalが配送されるまでsleepさせる。
+
+unsigned int sleep(unsigned int seconds);
+	指定された秒数 or 無視されないsignalが来るまで待機。
+
+int sleep(useconds_t usec);
+	指定されたマイクロ秒数 or 無視されないsignalが来るまで待機。
+
