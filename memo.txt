@@ -31,3 +31,7 @@ unsigned int sleep(unsigned int seconds);
 int sleep(useconds_t usec);
 	指定されたマイクロ秒数 or 無視されないsignalが来るまで待機。
 
+
+
+プロセス一覧
+psコマンド

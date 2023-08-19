@@ -1,0 +1,82 @@
+[指示]
+・実行ファイルはclient, serverと名付ける
+・エラー対策を徹底する。予期せぬエラー(SEGV, bus error, double free, and so forth)は禁止
+・メモリリークを起こしてはならない
+・クライアントとサーバ側でグローバル変数をそれぞれ1つ使える
+
+[必須]
+・まずserverから起動する。起動後、PIDを出力する
+・clientは2つのパラメータを受け取る
+	1. サーバのPID
+	2. 送信する文字列
+・clientは文字列をパラメータ(コマンドライン引数)としてサーバに送信する。文字列を受信したサーバはその文字列を出力する
+・サーバは文字列をすぐに出力する必要がある(100文字の出力に1秒以上かけてはならない)
+・サーバは再起動することなく、複数のクライアントから文字列を受け取れる必要がある
+・client - server間はUNIX signalsのみ使用しても良い
+・次の2つのsignalのみ使用して良い(SIGUSR1, SIGUSR2)
+
+[シリアル通信的通信]
+・文字はchar型 -> 1Byte -> 8bit
+	ex) const char c = 0x41; // 'A'
+		0100 0001
+
+・使用可能なシグナルは2種類
+	1bitずつ送信する
+
+[割り込み]
+・client
+	コマンドライン引数の文字を2種のシグナルでサーバに送信する
+	kill(pid, sig)
+	pidにサーバのプロセスを指定？
+	sigに送信する値を指定(0, 1)
+・server
+	シグナルを受信し、文字を復元する
+	signal(SIGUSR1 || SIGUSR2, signal_handler);
+	SIGUSR1なら0, SIGUSR2なら1?
+・SIGUSR1, SIGUSR2シグナルがプロセスに届くとデフォルトアクション(プロセスを終了)が発生する
+
+
+[使用する関数]
+int kill(pid_t pid, int sig)
+	プロセスにシグナルを送る
+	if (pid > 0)
+		sigがpidに指定されたIDを持つプロセスに送信される
+	else if (pid == 0)
+		呼び出し元のプロセスのプロセスグループに属する全てのプロセスにsigで指定したシグナルが送られる
+	else if (pid == -1)
+		sigで指定したシグナルが呼び出し元のプロセスがシグナルを送る許可を持つ全てのプロセスに送られる。(番号1には送られない)
+	else if (pid < -1)
+		IDが-pidのプロセスグループに属する全てのプロセスにsigで指定したシグナルが送られる
+	[返り値]
+	正常終了(少なくとも1つのシグナルが送信された): 0
+	異常終了: -1
+
+sig_t	signal(int sig, sig_t func);
+	sigactionの簡易ヴァージョン。しかし、移植性に関する混乱が存在するため、sigacationを使用することを推奨されている？
+	signalの方がシンプルなのでこちらを使用します。今回は移植性を考慮する必要もないので。。。
+	sig: シグナル
+	func: シグナルハンドラ
+	ex)
+	void signal_handler {
+		puts("END");
+		exit(1);
+	}
+	signal(SIGINT, signal_handler)
+
+
+
+int		sigaction(int signum, cnost struct sigaction *act, struct sigaction *oldact);
+	signum: シグナルを指定する
+	act:	NULL以外ならば、シグナルsignumの新しい動作(action)としてactが設定される
+	oldact: NULL以外ならば、今までの動作がoldactに格納される
+	[返り値]
+	正常終了: 0
+	異常終了: -1
+
+SIGUSR1	P1990	Term	ユーザー定義シグナル 1
+SIGUSR2	P1990	Term	ユーザー定義シグナル 2
+
+
+シグナルハンドラ
+	シグナルが送られてきた時に行う処理
+	ex) Ctrl + Cというシグナル -> 中断という処理(シグナルハンドラ)
