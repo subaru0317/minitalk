@@ -6,7 +6,7 @@
 /*   By: smihata <smihata@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/22 15:27:39 by smihata           #+#    #+#             */
-/*   Updated: 2023/03/26 17:46:28 by smihata          ###   ########.fr       */
+/*   Updated: 2023/08/20 11:48:26 by smihata          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ static int	ft_isspace(unsigned char c)
 	return (0);
 }
 
-static unsigned long	ft_is_overflow_or_underflow(int sign)
+static unsigned long	ft_is_overflow(int sign)
 {
 	if (sign < 0)
 		return (LONG_MIN);
@@ -50,7 +50,7 @@ int	ft_atoi(const char *nptr)
 	sign = ft_has_sign(*nptr);
 	if (*nptr == '+' || *nptr == '-')
 		nptr++;
-	cutoff = ft_is_overflow_or_underflow(sign);
+	cutoff = ft_is_overflow(sign);
 	cutlim = cutoff % 10;
 	cutoff /= 10;
 	value = 0;
@@ -60,7 +60,7 @@ int	ft_atoi(const char *nptr)
 		if (!(0 <= num && num <= 9))
 			break ;
 		if (value > cutoff || (value == cutoff && num > cutlim))
-			return ((int)ft_is_overflow_or_underflow(sign));
+			return ((int)ft_is_overflow(sign));
 		value = value * 10 + num;
 	}
 	return ((int)(sign * value));

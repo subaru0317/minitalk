@@ -6,7 +6,7 @@
 /*   By: smihata <smihata@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/06 09:10:44 by smihata           #+#    #+#             */
-/*   Updated: 2023/08/19 17:55:29 by smihata          ###   ########.fr       */
+/*   Updated: 2023/08/20 15:24:37 by smihata          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,13 +14,13 @@
 #include <unistd.h>
 #include "libft/libft.h"
 
-void	ft_error()
+static void	ft_kill_error()
 {
 	write(STDERR_FILENO, "Error\n", 6);
 	exit(0);
 }
 
-void	send_char(pid_t pid, char c)
+static void	send_char(pid_t pid, char c)
 {
 	int	bits;
 	int	error;
@@ -39,7 +39,7 @@ void	send_char(pid_t pid, char c)
 	}
 }
 
-void	send_str(pid_t pid, char *s)
+static void	send_str(pid_t pid, char *s)
 {
 	while (*s)
 	{
@@ -48,7 +48,7 @@ void	send_str(pid_t pid, char *s)
 	}
 }
 
-void	send_reset(pid_t pid)
+static void	send_reset(pid_t pid)
 {
 	size_t	i;
 	int		error;
@@ -60,8 +60,18 @@ void	send_reset(pid_t pid)
 		if (error == -1)
 			ft_error();
 		i++;
-		usleep(100);
+		usleep(800);
 	}
+}
+
+int	exist_process(pid_t pid)
+{
+	int	r;
+
+	r = kill(pid, 0);
+	if (r == 0)
+		return (1);
+	return (0);
 }
 
 // argv[1] - サーバ番号を指定する
@@ -71,9 +81,21 @@ int	main(int argc, char *argv[])
 	pid_t	pid;
 
 	if (argc != 3)
+	{
+		write(STDERR_FILENO, "Error: Invalid argument\n", 24);
 		return (1);
+	}
 	pid = (pid_t)ft_atoi(argv[1]);
-	send_reset(pid);
-	send_str(pid, argv[2]);
+	if (exist_process(pid))
+	{
+		send_reset(pid);
+		send_str(pid, argv[2]);
+	}
+	else
+	{
+		write(STDERR_FILENO, 
+			"Error: The process ID does not exist or is not allowed to send signals.\n", 72);
+		return(1);
+	}
 	return (0);
 }

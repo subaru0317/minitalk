@@ -6,7 +6,7 @@
 /*   By: smihata <smihata@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/06 09:10:48 by smihata           #+#    #+#             */
-/*   Updated: 2023/08/19 18:04:01 by smihata          ###   ########.fr       */
+/*   Updated: 2023/08/20 15:23:16 by smihata          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,80 +17,31 @@
 
 volatile sig_atomic_t	g_char = 0;
 
-// void	signal_handler(int signum, siginfo_t *info, void *dummy)
-// {
-// 	static int	i;
-// 	static int	consecutive_SIGUSR2;
-// 	char		c;
-
-// 	g_char <<= 1;
-// 	if (signum == SIGUSR1)
-// 	{
-// 		g_char |= 1;
-// 		consecutive_SIGUSR2 = 0;
-// 	}
-// 	else if (signum == SIGUSR2)
-// 	{
-// 		consecutive_SIGUSR2++;
-// 		if (consecutive_SIGUSR2 == 8)
-// 		{
-// 			i = 0;
-// 			consecutive_SIGUSR2 = 0;
-// 			return ;
-// 		}
-// 	}
-// 	i++;
-// 	c = 0xff & g_char;
-// 	if (i == 8)
-// 	{
-// 		if (c == 0x00)
-// 			g_char = 0;
-// 		write(STDOUT_FILENO, &c, 1);
-// 		i = 0;
-// 	}
-// }
-
-void signal_handler(int signum, siginfo_t *info, void *dummy)
+void	signal_handler(int signum, siginfo_t *info, void *dummy)
 {
-    static int consecutive_SIGUSR2 = 0;
-    static int i;
-    char c;
+	static int	i;
+	char		c;
 
-    if (signum == SIGUSR2)
-    {
-        consecutive_SIGUSR2++;
-        if (consecutive_SIGUSR2 == 8)
-        {
-            i = 0;
-            g_char = 0;  // こちらもリセットします
-            consecutive_SIGUSR2 = 0;
-            return;
-        }
-    }
-    else
-    {
-        consecutive_SIGUSR2 = 0;
-    }
-
-    g_char <<= 1;
-    if (signum == SIGUSR1)
-        g_char |= 1;
-
-    i++;
-    c = 0xff & g_char;
-    if (i == 8)
-    {
-        if (consecutive_SIGUSR2 < 8)
-        {
-            write(STDOUT_FILENO, &c, 1);
-        }
-        i = 0;
-    }
+	g_char <<= 1;
+	if (signum == SIGUSR1)
+		g_char |= 1;
+	else if (signum == SIGUSR2)
+		;
+	i++;
+	c = 0xff & g_char;
+	if (i == 8)
+	{
+		write(STDOUT_FILENO, &c, 1);
+		i = 0;
+	}
 }
 
+// sig      :   handlerの呼び出しを引き起こしたsignalの番号
+// info     :   siginfo_tへのポインタ。signalに関する詳細情報を含む構造体
+// ucontext :   ucontext_t構造体へのポインタ。void*にキャストされている。
+//              カーネルによってユーザ空間スタックに保存されたsignalコンテキスト情報が含まれる
 
-
-void	ft_error()
+static void	ft_error()
 {
 	write(STDERR_FILENO, "Error\n", 6);
 	exit(0);
@@ -106,17 +57,15 @@ int main(void)
 	if (error == -1)
 		ft_error();
 	sigaddset(&act1.sa_mask, SIGUSR2);
-	sigaddset(&act1.sa_mask, SIGINT);
 	error = sigemptyset(&act2.sa_mask);
 	if (error == -1)
 		ft_error();
 	sigaddset(&act2.sa_mask, SIGUSR1);
-	sigaddset(&act2.sa_mask, SIGINT);
 	act1.sa_sigaction = signal_handler;
 	act2.sa_sigaction = signal_handler;
 	act1.sa_flags = SA_SIGINFO;
 	act2.sa_flags = SA_SIGINFO;
-	printf("server pid=%d\n", getpid());
+	printf("server pid=%d\n", getpid()); // ft_printfに要修正
 	error = sigaction(SIGUSR1, &act1, NULL);
 	if (error == -1)
 		ft_error();
