@@ -6,18 +6,16 @@
 /*   By: smihata <smihata@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/06 09:10:44 by smihata           #+#    #+#             */
-/*   Updated: 2023/08/20 15:24:37 by smihata          ###   ########.fr       */
+/*   Updated: 2023/08/22 10:38:45 by smihata          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <signal.h>
-#include <unistd.h>
-#include "libft/libft.h"
+#include "minitalk.h"
 
-static void	ft_kill_error()
+static void	ft_kill_error(void)
 {
-	write(STDERR_FILENO, "Error\n", 6);
-	exit(0);
+	write(STDERR_FILENO, "Error: Failed to send a kill signal.\n", 39);
+	exit(1);
 }
 
 static void	send_char(pid_t pid, char c)
@@ -33,7 +31,7 @@ static void	send_char(pid_t pid, char c)
 		else
 			error = kill(pid, SIGUSR2);
 		if (error == -1)
-			ft_error();
+			ft_kill_error();
 		bits--;
 		usleep(100);
 	}
@@ -48,34 +46,37 @@ static void	send_str(pid_t pid, char *s)
 	}
 }
 
-static void	send_reset(pid_t pid)
-{
-	size_t	i;
-	int		error;
+// static void	send_reset(pid_t pid)
+// {
+// 	size_t	i;
+// 	int		error;
 
-	i = 0;
-	while (i < 8)
-	{
-		error = kill(pid, SIGUSR2);
-		if (error == -1)
-			ft_error();
-		i++;
-		usleep(800);
-	}
-}
+// 	i = 0;
+// 	while (i < 8)
+// 	{
+// 		error = kill(pid, SIGUSR2);
+// 		if (error == -1)
+// 			ft_kill_error();
+// 		i++;
+// 		usleep(800);
+// 	}
+// }
 
-int	exist_process(pid_t pid)
+int	valid_process(pid_t pid)
 {
 	int	r;
 
+	if (!(100 <= pid && pid <= 99998))
+	{
+		write(STDERR_FILENO, "Error: Invalid pid\n", 19);
+		exit(1);
+	}
 	r = kill(pid, 0);
 	if (r == 0)
 		return (1);
 	return (0);
 }
 
-// argv[1] - サーバ番号を指定する
-// argc[2] - 送信する文字列を入力する
 int	main(int argc, char *argv[])
 {
 	pid_t	pid;
@@ -85,17 +86,21 @@ int	main(int argc, char *argv[])
 		write(STDERR_FILENO, "Error: Invalid argument\n", 24);
 		return (1);
 	}
-	pid = (pid_t)ft_atoi(argv[1]);
-	if (exist_process(pid))
+	if (!is_int(argv[1]))
 	{
-		send_reset(pid);
-		send_str(pid, argv[2]);
+		write(STDERR_FILENO, "Error: argument is not int.\n", 28);
+		exit(1);
 	}
+	pid = (pid_t)ft_atoi(argv[1]);
+	if (valid_process(pid))
+		send_str(pid, argv[2]);
 	else
 	{
-		write(STDERR_FILENO, 
-			"Error: The process ID does not exist or is not allowed to send signals.\n", 72);
-		return(1);
+		write(STDERR_FILENO,
+			"Error: The process ID does not exist", 36);
+		write(STDERR_FILENO,
+			" or is not allowed to send signals.\n", 36);
+		return (1);
 	}
 	return (0);
 }

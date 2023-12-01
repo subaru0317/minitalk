@@ -6,52 +6,54 @@
 /*   By: smihata <smihata@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/06 09:10:48 by smihata           #+#    #+#             */
-/*   Updated: 2023/08/20 15:23:16 by smihata          ###   ########.fr       */
+/*   Updated: 2023/08/22 12:05:52 by smihata          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <signal.h>
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include "minitalk.h"
 
 volatile sig_atomic_t	g_char = 0;
 
-void	signal_handler(int signum, siginfo_t *info, void *dummy)
+static void	signal_handler(int signum, siginfo_t *info, void *dummy)
 {
 	static int	i;
 	char		c;
 
+	(void)info;
+	(void)dummy;
 	g_char <<= 1;
 	if (signum == SIGUSR1)
 		g_char |= 1;
 	else if (signum == SIGUSR2)
 		;
 	i++;
-	c = 0xff & g_char;
+	c = g_char;
 	if (i == 8)
 	{
 		write(STDOUT_FILENO, &c, 1);
 		i = 0;
+		g_char = 0;
 	}
 }
 
-// sig      :   handlerの呼び出しを引き起こしたsignalの番号
-// info     :   siginfo_tへのポインタ。signalに関する詳細情報を含む構造体
-// ucontext :   ucontext_t構造体へのポインタ。void*にキャストされている。
-//              カーネルによってユーザ空間スタックに保存されたsignalコンテキスト情報が含まれる
-
-static void	ft_error()
+static void	ft_error(void)
 {
 	write(STDERR_FILENO, "Error\n", 6);
-	exit(0);
+	exit(1);
 }
 
-int main(void)
+static void	ft_stdout_pid(void)
 {
-	struct sigaction act1;
-	struct sigaction act2;
-	int error;
+	write(STDOUT_FILENO, "server pid=", 11);
+	ft_putnbr_fd(getpid(), STDOUT_FILENO);
+	write(STDOUT_FILENO, "\n", 1);	
+}
+
+int	main(void)
+{
+	struct sigaction	act1;
+	struct sigaction	act2;
+	int					error;
 
 	error = sigemptyset(&act1.sa_mask);
 	if (error == -1)
@@ -65,7 +67,7 @@ int main(void)
 	act2.sa_sigaction = signal_handler;
 	act1.sa_flags = SA_SIGINFO;
 	act2.sa_flags = SA_SIGINFO;
-	printf("server pid=%d\n", getpid()); // ft_printfに要修正
+	ft_stdout_pid();
 	error = sigaction(SIGUSR1, &act1, NULL);
 	if (error == -1)
 		ft_error();

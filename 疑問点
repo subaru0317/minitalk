@@ -1,0 +1,3 @@
+makefileした時に、is up to date ではなく、nothing ...系のメッセージになっている。
+これって大丈夫だっけ？
+testを行うと、diff error何がいけないんだ？
