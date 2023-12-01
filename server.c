@@ -6,7 +6,7 @@
 /*   By: smihata <smihata@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/06 09:10:48 by smihata           #+#    #+#             */
-/*   Updated: 2023/08/22 12:05:52 by smihata          ###   ########.fr       */
+/*   Updated: 2023/12/01 13:04:29 by smihata          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,21 +46,18 @@ static void	ft_stdout_pid(void)
 {
 	write(STDOUT_FILENO, "server pid=", 11);
 	ft_putnbr_fd(getpid(), STDOUT_FILENO);
-	write(STDOUT_FILENO, "\n", 1);	
+	write(STDOUT_FILENO, "\n", 1);
 }
 
 int	main(void)
 {
 	struct sigaction	act1;
 	struct sigaction	act2;
-	int					error;
 
-	error = sigemptyset(&act1.sa_mask);
-	if (error == -1)
+	if (sigemptyset(&act1.sa_mask) == -1)
 		ft_error();
 	sigaddset(&act1.sa_mask, SIGUSR2);
-	error = sigemptyset(&act2.sa_mask);
-	if (error == -1)
+	if (sigemptyset(&act2.sa_mask) == -1)
 		ft_error();
 	sigaddset(&act2.sa_mask, SIGUSR1);
 	act1.sa_sigaction = signal_handler;
@@ -68,11 +65,9 @@ int	main(void)
 	act1.sa_flags = SA_SIGINFO;
 	act2.sa_flags = SA_SIGINFO;
 	ft_stdout_pid();
-	error = sigaction(SIGUSR1, &act1, NULL);
-	if (error == -1)
+	if (sigaction(SIGUSR1, &act1, NULL) == -1)
 		ft_error();
-	error = sigaction(SIGUSR2, &act2, NULL);
-	if (error == -1)
+	if (sigaction(SIGUSR2, &act2, NULL) == -1)
 		ft_error();
 	while (1)
 		pause();
